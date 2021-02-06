@@ -221,6 +221,7 @@ static void get_device_service_name(char *service_name, size_t max)
 
 xQueueHandle xUdpSendQueue = NULL;
 void mynet_task(void *);
+extern void measurement_task(void *p);
 
 void app_main(void)
 {
@@ -286,7 +287,8 @@ void app_main(void)
   // this is the udp data sender task -
   xUdpSendQueue = xQueueCreate(10, 128);
   xTaskCreate(mynet_task, "my_net_task", 3072, NULL, 1, NULL);
-  
+  xTaskCreate(measurement_task, "measurement_task", 3072, NULL, 1, NULL);  
+
   char msgbuf[256];
   
   if (inet_online) { 
