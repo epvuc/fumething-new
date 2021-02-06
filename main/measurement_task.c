@@ -15,6 +15,7 @@ uint8_t ads1110_readcfg(void);
 int16_t ads1110_read(void);
 
 extern struct bme280_dev bme280; // from bme280_sup.c
+extern bool inet_online;
 
 void measurement_task(void *p)
 {
@@ -58,7 +59,8 @@ void measurement_task(void *p)
       count = 0;
 
     ESP_LOGI("FUME", "%s", msgbuf);
-    xQueueSend(xUdpSendQueue, &msgbuf, ( TickType_t ) 0);
+    if (inet_online)
+      xQueueSend(xUdpSendQueue, &msgbuf, ( TickType_t ) 0);
     vTaskDelay(800/portTICK_PERIOD_MS);
   }
 }

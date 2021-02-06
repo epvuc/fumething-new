@@ -41,6 +41,7 @@ int32_t interval = DEF_INTERVAL;
 
 // LED on my homemade board, doesn't correspond to anything
 #define LED1 2
+#define BOOT_BUTTON 0
 
 void my_nvs_read_or_initialize(char*, int32_t, int32_t*);
 void my_nvs_update(char*, int32_t);
@@ -145,7 +146,7 @@ static EventGroupHandle_t wifi_event_group;
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int event_id, void* event_data)
 {
-    httpd_handle_t webserver = NULL;
+    httpd_handle_t webserver = NULL; // experiment
     if (event_base == WIFI_PROV_EVENT) {
         switch (event_id) {
             case WIFI_PROV_START:
@@ -229,6 +230,9 @@ void app_main(void)
   gpio_set_direction(LED1, GPIO_MODE_OUTPUT);
   gpio_set_level(LED1, 0);
 
+  gpio_pad_select_gpio(BOOT_BUTTON);
+  gpio_set_direction(BOOT_BUTTON, GPIO_MODE_INPUT);
+  
   /* initialize nvs flash partition if it's messed up */
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -261,6 +265,7 @@ void app_main(void)
   bool provisioned = false;
   ESP_ERROR_CHECK(wifi_prov_mgr_is_provisioned(&provisioned));
   if (!provisioned) {
+  reprovision: // experiment
     ESP_LOGI("PROV", "Starting provisioning");
     char service_name[12];
     get_device_service_name(service_name, sizeof(service_name));
@@ -278,7 +283,7 @@ void app_main(void)
     ESP_LOGI("PROV", "Already provisioned, starting Wi-Fi STA");
 
     /* We don't need the manager as device is already provisioned, so let's release it's resources */
-    wifi_prov_mgr_deinit();
+    // wifi_prov_mgr_deinit();  // disabled as experiment
 
     /* Start Wi-Fi station */
     wifi_init_sta();
@@ -297,6 +302,12 @@ void app_main(void)
   }
 
   while (1) {
+    if (gpio_get_level(BOOT_BUTTON) == 0) { 
+      ESP_LOGI("GPIO", "gpio0: button pushed\n");
+      inet_online = pdFALSE;
+      mdns_free(); 
+      goto reprovision; // experiment
+    }
     vTaskDelay(pdMS_TO_TICKS(1000));
     /*
     snprintf(msgbuf, 255, "0000000000 Fumes: f:0000 t:00.00 p:00.0000 h:00.0 #0000\n");
