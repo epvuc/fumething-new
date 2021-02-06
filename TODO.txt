@@ -6,8 +6,9 @@ use dest_ip and dest_port for the udp report target in network.c
 	if changed via web api, write them to NVS and reboot
 
 make the api return current data in json and implement changing the config values
-
-add api call to turn onboard LED on and off
+	dest_ip
+	dest_port
+	interval
 
 read the button on the board on power up and wipe wifi config if it's held down
 	so you can re-provision
@@ -17,5 +18,9 @@ read the button on the board on power up and wipe wifi config if it's held down
 	it first connects with stored credentials on boot, and things start up normally
 	yay. 
 
+	when provisioning is in progress, blue LED turns on, and it turns off when 
+	it's successful
 
-add task watchdog to the hardware thread
+
+add task watchdog to the hardware thread in case i2c hangs or something.
+
