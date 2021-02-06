@@ -17,6 +17,9 @@ int16_t ads1110_read(void);
 extern struct bme280_dev bme280; // from bme280_sup.c
 extern bool inet_online;
 
+#define DUMMY_MEASUREMENTS
+
+#ifndef DUMMY_MEASUREMENTS
 void measurement_task(void *p)
 {
   int8_t rslt;
@@ -64,3 +67,29 @@ void measurement_task(void *p)
     vTaskDelay(800/portTICK_PERIOD_MS);
   }
 }
+
+#else /* DUMMY_MEASUREMENTS */ 
+void measurement_task(void *p)
+{
+  char msgbuf[128];
+  uint32_t count = 0;
+  
+  while(1) { 
+
+    snprintf(msgbuf, sizeof(msgbuf), "Fumes: f:%d t:%.02f p:%0.4f h:%0.1f #%u\r\n",
+	     0,
+	     80.0,
+	     30.0,
+	     90.0,
+	     count++);
+
+    if (count >= 9999)
+      count = 0;
+
+    ESP_LOGI("TEST", "%s", msgbuf);
+    if (inet_online)
+      xQueueSend(xUdpSendQueue, &msgbuf, ( TickType_t ) 0);
+    vTaskDelay(800/portTICK_PERIOD_MS);
+  }
+}
+#endif
