@@ -12,14 +12,10 @@ add api call to turn onboard LED on and off
 read the button on the board on power up and wipe wifi config if it's held down
 	so you can re-provision
 
-	ok reading the button works. As an experiment i just threw in a goto to 
-	just before wifi_prov_mgr_start_provisioning(), it does go through the
-	process and kinda works - it crashes, then restarts and uses the new creds
-	but obviously this is not a solution :) 
-
-	it crashes when the event handler tries to re-add the mdns service and httpd
-	service after the reprovisioning succeeds, since they weren't removed beforehand.
-
+	on button press, it disconnects wifi, frees mdns, sets inet_online false, and
+	starts the provisioning; when it succeeds, it generates the same events as when
+	it first connects with stored credentials on boot, and things start up normally
+	yay. 
 
 
 add task watchdog to the hardware thread

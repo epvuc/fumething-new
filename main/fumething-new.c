@@ -43,6 +43,9 @@ int32_t interval = DEF_INTERVAL;
 #define LED1 2
 #define BOOT_BUTTON 0
 
+void led_on(void) {  gpio_set_level(LED1, 1); }
+void led_off(void) {  gpio_set_level(LED1, 0); }
+
 void my_nvs_read_or_initialize(char*, int32_t, int32_t*);
 void my_nvs_update(char*, int32_t);
 
@@ -151,6 +154,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         switch (event_id) {
             case WIFI_PROV_START:
                 ESP_LOGI("WIFI", "Provisioning started");
+		led_on();
                 break;
             case WIFI_PROV_CRED_RECV: {
                 wifi_sta_config_t *wifi_sta_cfg = (wifi_sta_config_t *)event_data;
@@ -183,6 +187,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         esp_wifi_connect();
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+	led_off();
         ESP_LOGI("WIFI", "Connected with IP Address:" IPSTR, IP2STR(&event->ip_info.ip));
         /* Signal main application to continue execution */
         xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_EVENT);
@@ -282,7 +287,7 @@ void app_main(void)
     ESP_LOGI("PROV", "Already provisioned, starting Wi-Fi STA");
 
     /* We don't need the manager as device is already provisioned, so let's release it's resources */
-    // wifi_prov_mgr_deinit();  // disabled as experiment
+    // wifi_prov_mgr_deinit();  // disabled so we can reprovision if we want, maybe this is ok?
 
     /* Start Wi-Fi station */
     wifi_init_sta();
