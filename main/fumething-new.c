@@ -39,6 +39,9 @@ char dest_ip[16] = DEF_DEST_IP;
 int32_t dest_port = DEF_DEST_PORT;
 int32_t interval = DEF_INTERVAL;
 
+// LED on my homemade board, doesn't correspond to anything
+#define LED1 2
+
 void my_nvs_read_or_initialize(char*, int32_t, int32_t*);
 void my_nvs_update(char*, int32_t);
 
@@ -221,6 +224,10 @@ void mynet_task(void *);
 
 void app_main(void)
 {
+  gpio_pad_select_gpio(LED1); 
+  gpio_set_direction(LED1, GPIO_MODE_OUTPUT);
+  gpio_set_level(LED1, 0);
+
   /* initialize nvs flash partition if it's messed up */
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
