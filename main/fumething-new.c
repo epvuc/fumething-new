@@ -146,7 +146,7 @@ static EventGroupHandle_t wifi_event_group;
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int event_id, void* event_data)
 {
-    httpd_handle_t webserver = NULL; // experiment
+    httpd_handle_t webserver = NULL;
     if (event_base == WIFI_PROV_EVENT) {
         switch (event_id) {
             case WIFI_PROV_START:
@@ -265,7 +265,6 @@ void app_main(void)
   bool provisioned = false;
   ESP_ERROR_CHECK(wifi_prov_mgr_is_provisioned(&provisioned));
   if (!provisioned) {
-  reprovision: // experiment
     ESP_LOGI("PROV", "Starting provisioning");
     char service_name[12];
     get_device_service_name(service_name, sizeof(service_name));
@@ -306,7 +305,20 @@ void app_main(void)
       ESP_LOGI("GPIO", "gpio0: button pushed\n");
       inet_online = pdFALSE;
       mdns_free(); 
-      goto reprovision; // experiment
+      esp_wifi_disconnect();
+      ESP_LOGI("PROV", "Starting provisioning");
+      char service_name[12];
+      get_device_service_name(service_name, sizeof(service_name));
+      wifi_prov_security_t security = WIFI_PROV_SECURITY_1;
+      // const char *pop = "abcd1234";
+      const char *pop = BLE_PROV_PROOF_OF_POSSESSION;
+      const char *service_key = NULL;
+      uint8_t custom_service_uuid[] = {
+	0xb4, 0xdf, 0x5a, 0x1c, 0x3f, 0x6b, 0xf4, 0xbf,
+	0xea, 0x4a, 0x82, 0x03, 0x04, 0x90, 0x1a, 0x02,
+      };
+      wifi_prov_scheme_ble_set_service_uuid(custom_service_uuid);
+      ESP_ERROR_CHECK(wifi_prov_mgr_start_provisioning(security, pop, service_name, service_key));
     }
     vTaskDelay(pdMS_TO_TICKS(1000));
     /*
