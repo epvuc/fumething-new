@@ -297,7 +297,8 @@ void app_main(void)
   }
 
   while (1) {
-    //    snprintf(msgbuf,255,"{\"v\": %d, \"rel\": %d, \"avg\": %d, \"twf\": %d, \"rly\": %d}\n", voltage, relative, avg, time_while_filled, relay);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    /*
     snprintf(msgbuf, 255, "0000000000 Fumes: f:0000 t:00.00 p:00.0000 h:00.0 #0000\n");
     printf("%s", msgbuf);
     if (inet_online)
@@ -305,6 +306,7 @@ void app_main(void)
     else
       ESP_LOGI("NET", "we're offline, can't send data.");
     vTaskDelay(pdMS_TO_TICKS(interval));
+    */
   }
 }
 
