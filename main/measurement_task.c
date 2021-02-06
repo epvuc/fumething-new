@@ -17,13 +17,19 @@ int16_t ads1110_read(void);
 extern struct bme280_dev bme280; // from bme280_sup.c
 extern bool inet_online;
 
+extern uint32_t  interval; // set in fumething_new.c app_main()
+uint32_t  gl_fumes = 0;
+float     gl_temp = 0.0;
+float     gl_pressure = 0.0;
+float     gl_humidity = 0.0;
+uint32_t  gl_count = 0;
+
 #define DUMMY_MEASUREMENTS
 
 #ifndef DUMMY_MEASUREMENTS
 void measurement_task(void *p)
 {
   int8_t rslt;
-  uint32_t count = 0;
   int32_t val;
   //  double volts;
   char msgbuf[128];
@@ -51,20 +57,21 @@ void measurement_task(void *p)
     val=ads1110_read();
     //    volts=(double)val/6537.545;
 
-    snprintf(msgbuf, sizeof(msgbuf), "Fumes: f:%d t:%.02f p:%0.4f h:%0.1f #%u\r\n",
-	     val,
-	     (comp_data.temperature * 9/5)+32,
-	     comp_data.pressure / 3386.3886,
-	     comp_data.humidity,
-	     count++);
+    gl_fumes = val;
+    gl_temp = (comp_data.temperature * 9/5)+32;
+    gl_pressure = comp_data.pressure / 3386.3886;
+    gl_humidity = comp_data.humidity;
+    gl_count = count++;
 
     if (count >= 9999)
       count = 0;
 
+    snprintf(msgbuf, sizeof(msgbuf), "Fumes: f:%d t:%.02f p:%0.4f h:%0.1f #%u\r\n",
+	     gl_fumes, gl_temp, gl_pressure, gl_humidity, gl_count);
     ESP_LOGI("FUME", "%s", msgbuf);
     if (inet_online)
       xQueueSend(xUdpSendQueue, &msgbuf, ( TickType_t ) 0);
-    vTaskDelay(800/portTICK_PERIOD_MS);
+    vTaskDelay(interval/portTICK_PERIOD_MS);
   }
 }
 
@@ -76,20 +83,17 @@ void measurement_task(void *p)
   
   while(1) { 
 
-    snprintf(msgbuf, sizeof(msgbuf), "Fumes: f:%d t:%.02f p:%0.4f h:%0.1f #%u\r\n",
-	     0,
-	     80.0,
-	     30.0,
-	     90.0,
-	     count++);
-
+    gl_count = count++;
     if (count >= 9999)
       count = 0;
+
+    snprintf(msgbuf, sizeof(msgbuf), "Fumes: f:%d t:%.02f p:%0.4f h:%0.1f #%u\r\n",
+	     gl_fumes, gl_temp, gl_pressure, gl_humidity, gl_count);
 
     ESP_LOGI("TEST", "%s", msgbuf);
     if (inet_online)
       xQueueSend(xUdpSendQueue, &msgbuf, ( TickType_t ) 0);
-    vTaskDelay(800/portTICK_PERIOD_MS);
+    vTaskDelay(interval/portTICK_PERIOD_MS);
   }
 }
 #endif

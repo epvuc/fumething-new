@@ -36,10 +36,17 @@
 #define DEF_INTERVAL 1000
 
 char dest_ip[16] = DEF_DEST_IP;
-int32_t dest_port = DEF_DEST_PORT;
-int32_t interval = DEF_INTERVAL;
+uint32_t dest_port = DEF_DEST_PORT;
+uint32_t interval = DEF_INTERVAL;
 
-// LED on my homemade board, doesn't correspond to anything
+extern uint32_t  gl_fumes;
+extern float     gl_temp;
+extern float     gl_pressure;
+extern float     gl_humidity;
+extern uint32_t  gl_count;
+
+
+// GPIO ports for on-board LED and button
 #define LED1 2
 #define BOOT_BUTTON 0
 
@@ -103,8 +110,10 @@ static esp_err_t api_get_handler(httpd_req_t *req)
   if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK)
     version = running_app_info.version;
   
-  snprintf(resp_buf, 255, "{\"ver\": \"%s\", \"dest_ip\": \"%s\", \"dest_port\": \"%d\", \"interval\": \"%d\"}\n",
-	   version, dest_ip, dest_port, interval);
+  // this string reaches a max size of 182 bytes, if you add anything make sure it still fits in resp_buf!
+  snprintf(resp_buf, 255,
+	   "{\"ver\": \"%s\", \"dest_ip\": \"%s\", \"dest_port\": \"%d\", \"interval\": \"%d\", \"count\": \"%d\", \"fumes\": \"%d\", \"temp\": \"%.1f\", \"press\": \"%.4f\", \"rh\": \"%.1f\"}\n",
+	   version, dest_ip, dest_port, interval, gl_count, gl_fumes, gl_temp, gl_pressure, gl_humidity );
   httpd_resp_send(req, resp_buf, strlen(resp_buf));
   if (will_restart) {
     vTaskDelay(pdMS_TO_TICKS(250));

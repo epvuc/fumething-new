@@ -5,12 +5,16 @@ use dest_ip and dest_port for the udp report target in network.c
 	if there are none, set them to the built-in defaults
 	if changed via web api, write them to NVS and reboot
 
-make the api return current data in json and implement changing the config values
+(done) make the api return current data in json 
+
+maybe report current wifi ssid in api json report?
+
+implement changing the config values via api
 	dest_ip
 	dest_port
 	interval
 
-read the button on the board on power up and wipe wifi config if it's held down
+(done) read the button on the board on power up and wipe wifi config if it's held down
 	so you can re-provision
 
 	on button press, it disconnects wifi, frees mdns, sets inet_online false, and
@@ -24,3 +28,15 @@ read the button on the board on power up and wipe wifi config if it's held down
 
 add task watchdog to the hardware thread in case i2c hangs or something.
 
+
+
+-------
+globals in measurement_task.c:
+uint32_t  interval = 1000;
+uint32_t  gl_fumes = 0;
+float     gl_temp = 0.0;
+float     gl_pressure = 0.0;
+float     gl_humidity = 0.0;
+uint32_t  gl_count = 0;
+
+{"ver": "a74a0f7-dirty", "dest_ip": "255.255.255.255", "dest_port": "31553", "interval": "1000000", "count": "9999", "fumes": "32768", "temp": "123.4", "press": "30.0000", "rh": "100.0"}
