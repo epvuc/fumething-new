@@ -7,6 +7,8 @@ use dest_ip and dest_port for the udp report target in network.c
 
 make the api return current data in json and implement changing the config values
 
+add api call to turn onboard LED on and off
+
 read the button on the board on power up and wipe wifi config if it's held down
 	so you can re-provision
 
