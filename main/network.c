@@ -15,7 +15,7 @@
 #include "lwip/netdb.h"
 
 #define DEST_IP "10.0.0.1"
-#define DEST_PORT 31351
+#define DEST_PORT 31553
 
 static struct sockaddr_in remote_addr;
 static int mysocket;
