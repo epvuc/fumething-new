@@ -36,6 +36,7 @@ void mynet_task(void *pvParameters) {
 	break; // at this point not much to do except wait and retry socket open.
       } else { 
 	// dest_ip and dest_port can change via API
+	ESP_LOGI("net", "target is %s:%d\n", (char *)&dest_ip, dest_port);
 	remote_addr.sin_family = AF_INET;
 	remote_addr.sin_addr.s_addr = inet_addr(dest_ip);
 	remote_addr.sin_port = htons(dest_port);
