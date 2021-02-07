@@ -100,6 +100,11 @@ static esp_err_t api_get_handler(httpd_req_t *req)
 	dest_port=strtol(param, NULL, 10);
 	// my_nvs_update("dest_port", dest_port);
       }
+      if (httpd_query_key_value(buf, "interval", param, sizeof(param)) == ESP_OK) {
+	ESP_LOGI("HTTP", "---> interval=%s", param);
+	interval=strtol(param, NULL, 10);
+	// my_nvs_update("interval", interval);
+      }
       if (httpd_query_key_value(buf, "reset", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> reset=%s", param);
 	if(strncmp(param, "1", 1) == 0)
