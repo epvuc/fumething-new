@@ -24,15 +24,15 @@ float     gl_pressure = 0.0;
 float     gl_humidity = 0.0;
 uint32_t  gl_count = 0;
 
-#define DUMMY_MEASUREMENTS
+/* #define DUMMY_MEASUREMENTS */
 
 #ifndef DUMMY_MEASUREMENTS
 void measurement_task(void *p)
 {
   int8_t rslt;
   int32_t val;
-  //  double volts;
-  char msgbuf[128];
+    char msgbuf[128];
+  uint32_t count = 0;
   struct bme280_data comp_data;
 
   // config the actual i2c bus
