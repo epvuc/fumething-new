@@ -429,7 +429,7 @@ void my_nvs_string_read_or_initialize(char *key, char *defval, char *parameter, 
     err = nvs_get_str(my_handle, key, parameter, (size_t *)&len);
     switch (err) {
     case ESP_OK:
-      ESP_LOGI("NVS", "nvs read %s = %d", key, *parameter);
+      ESP_LOGI("NVS", "nvs read %s = %s", key, parameter);
       break;
     case ESP_ERR_NVS_NOT_FOUND:
       ESP_LOGI("NVS", "nvs key %s not initialized, updating to %d.", key, *parameter);
