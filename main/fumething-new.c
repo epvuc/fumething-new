@@ -53,8 +53,8 @@ extern uint32_t  gl_count;
 void led_on(void) {  gpio_set_level(LED1, 1); }
 void led_off(void) {  gpio_set_level(LED1, 0); }
 
-void my_nvs_read_or_initialize(char*, int32_t, int32_t*);
-void my_nvs_update(char*, int32_t);
+void my_nvs_read_or_initialize(char*, uint32_t, uint32_t*);
+void my_nvs_update(char*, uint32_t);
 
 static void initialise_mdns(void)
 {
@@ -103,12 +103,12 @@ static esp_err_t api_get_handler(httpd_req_t *req)
       if (httpd_query_key_value(buf, "dest_port", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> dest_port=%s", param);
 	dest_port=strtol(param, NULL, 10);
-	// my_nvs_update("dest_port", dest_port);
+	my_nvs_update("dest_port", dest_port);
       }
       if (httpd_query_key_value(buf, "interval", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> interval=%s", param);
 	interval=strtol(param, NULL, 10);
-	// my_nvs_update("interval", interval);
+	my_nvs_update("interval", interval);
       }
       if (httpd_query_key_value(buf, "reset", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> reset=%s", param);
@@ -271,11 +271,11 @@ void app_main(void)
   }
   // read or initialize the operational params in nvs
   // (nvs_key_name, default_value, variable)
-  /*  -- TODO: make this work with strings too, for IP addr -- 
-  my_nvs_read_or_initialize("dest_ip", DEF_DEST_IP, &dest_ip);
+  /*  -- TODO: make this work with strings too, for IP addr -- */
+  // my_nvs_read_or_initialize("dest_ip", DEF_DEST_IP, &dest_ip);
   my_nvs_read_or_initialize("dest_port", DEF_DEST_PORT, &dest_port);
   my_nvs_read_or_initialize("interval", DEF_INTERVAL, &interval);
-  */
+
   
   /* provision wifi and IP */
   ESP_ERROR_CHECK(esp_netif_init());
@@ -363,7 +363,7 @@ void app_main(void)
   }
 }
 
-void my_nvs_update(char *key, int32_t value) {
+void my_nvs_update(char *key, uint32_t value) {
   esp_err_t err;
   nvs_handle_t my_handle;
 
@@ -371,14 +371,14 @@ void my_nvs_update(char *key, int32_t value) {
   if (err != ESP_OK) 
     ESP_LOGI("NVS", "error (%s) opening handle", esp_err_to_name(err));
   else {
-    err = nvs_set_i32(my_handle, key, value);
+    err = nvs_set_u32(my_handle, key, value);
     ESP_LOGI("NVS", "write storage %s = %d: %s", key, value, (err != ESP_OK) ? "FAILED" : "OK");
     err = nvs_commit(my_handle);
     ESP_LOGI("NVS", "%s", (err != ESP_OK) ? "commit FAILED" : "commit succeeded");
   }
 }
 
-void my_nvs_read_or_initialize(char *key, int32_t defval, int32_t *parameter) {
+void my_nvs_read_or_initialize(char *key, uint32_t defval, uint32_t *parameter) {
   esp_err_t err;
   *parameter = defval;
   nvs_handle_t my_handle;
@@ -387,7 +387,7 @@ void my_nvs_read_or_initialize(char *key, int32_t defval, int32_t *parameter) {
     ESP_LOGI("NVS", "error (%s) opening NVS handle", esp_err_to_name(err));
   else {
     *parameter = defval;
-    err = nvs_get_i32(my_handle, key, parameter);
+    err = nvs_get_u32(my_handle, key, parameter);
     switch (err) {
     case ESP_OK:
       ESP_LOGI("NVS", "nvs read %s = %d", key, *parameter);
