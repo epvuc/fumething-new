@@ -379,6 +379,8 @@ void my_nvs_update(char *key, uint32_t value) {
     ESP_LOGI("NVS", "%s", (err != ESP_OK) ? "commit FAILED" : "commit succeeded");
   }
 }
+
+// TODO: this needs to obey len and not depend on null termination
 void my_nvs_string_update(char *key, char *value, uint32_t len) {
   esp_err_t err;
   nvs_handle_t my_handle;
