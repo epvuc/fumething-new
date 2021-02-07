@@ -26,6 +26,8 @@ extern xQueueHandle xUdpSendQueue; // from fumething_new.c
 void mynet_task(void *pvParameters) {
   int len;
   char udpbuf[128];
+  char curr_dest_ip[16];
+  uint32_t curr_dest_port;
 
   while (1) { 
     while (1) { 
@@ -36,12 +38,18 @@ void mynet_task(void *pvParameters) {
 	break; // at this point not much to do except wait and retry socket open.
       } else { 
 	// dest_ip and dest_port can change via API
+	strncpy(curr_dest_ip, (char *)&dest_ip, 16);
+	curr_dest_port = dest_port;
 	ESP_LOGI("net", "target is %s:%d\n", (char *)&dest_ip, dest_port);
 	remote_addr.sin_family = AF_INET;
 	remote_addr.sin_addr.s_addr = inet_addr(dest_ip);
 	remote_addr.sin_port = htons(dest_port);
 	
 	while (1) {
+	  if ((strncmp((char *)&dest_ip, curr_dest_ip, 16) != 0) || (curr_dest_port != dest_port)) { 
+	    ESP_LOGI("net", "target changed to %s:%d\n", (char *)&dest_ip, dest_port);
+	    break;  // dest changed, drop out and reopen udp port
+	  }
 	  if (xQueueReceive(xUdpSendQueue, &udpbuf, (TickType_t)2)) {
 	    vTaskDelay(1); 
 	    len = sendto(mysocket, udpbuf, strlen(udpbuf), 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
@@ -53,6 +61,7 @@ void mynet_task(void *pvParameters) {
 	      break;
 	    }
 	  }
+	  vTaskDelay(1); // maybe not needed?
 	}
       }    
     }
