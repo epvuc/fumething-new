@@ -91,10 +91,15 @@ static esp_err_t api_get_handler(httpd_req_t *req)
   buf_len = httpd_req_get_url_query_len(req) + 1;
   if (buf_len > 1) {
     buf = malloc(buf_len);
-    /* Put more query endpoints here */
     if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
       ESP_LOGI("HTTP", "Found URL query => %s", buf);
       char param[32];
+      /* put more api endpoints here */
+      if (httpd_query_key_value(buf, "dest_port", param, sizeof(param)) == ESP_OK) {
+	ESP_LOGI("HTTP", "---> dest_port=%s", param);
+	dest_port=strtol(param, NULL, 10);
+	// my_nvs_update("dest_port", dest_port);
+      }
       if (httpd_query_key_value(buf, "reset", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> reset=%s", param);
 	if(strncmp(param, "1", 1) == 0)
