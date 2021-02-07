@@ -1,5 +1,28 @@
 ------ TODO ------
 
+nvs read-or-initialize-to-default works fully for integers (dest_port, interval)
+seems to work on string (dest_ip) as well, first time around it logged that it had
+no value and was updating, and then sent to the correct IP. 
+After reboot:
+I (692) NVS: nvs read dest_ip = 49
+I (702) NVS: nvs read dest_port = 31553
+I (702) NVS: nvs read interval = 1000
+
+that "49" is because I forgot to change the debug printf from %d to %s. But if I change it
+to %s, there's a giant block of random build errors and it won't compile
+
+Querying it via API shows the correct value. 
+
+Changing dest_ip via API works and it sends to the new IP, and querying via API shows the
+correct value. It's stored in NVS and gets used instead of the default on restart. 
+
+
+add task watchdog to the hardware thread in case i2c hangs or something.
+
+maybe report current wifi ssid in api json report?
+
+------ DONE ------
+
 use dest_ip and dest_port for the udp report target in network.c
 	read values from NVS on startup
 	if there are none, set them to the built-in defaults
@@ -9,12 +32,6 @@ implement changing the config values via api
 	dest_ip
 	dest_port
 	interval
-
-add task watchdog to the hardware thread in case i2c hangs or something.
-
-maybe report current wifi ssid in api json report?
-
------- DONE ------
 
 make measurement_task() use the global configuration var "interval" for its timing.
 

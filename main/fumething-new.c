@@ -55,6 +55,8 @@ void led_off(void) {  gpio_set_level(LED1, 0); }
 
 void my_nvs_read_or_initialize(char*, uint32_t, uint32_t*);
 void my_nvs_update(char*, uint32_t);
+void my_nvs_string_read_or_initialize(char*, char*, char*, uint32_t);
+void my_nvs_string_update(char*, char*, uint32_t);
 
 static void initialise_mdns(void)
 {
@@ -98,7 +100,7 @@ static esp_err_t api_get_handler(httpd_req_t *req)
       if (httpd_query_key_value(buf, "dest_ip", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> dest_ip=%s", param);
 	strncpy(dest_ip, param, 16);
-	// my_nvs_update("dest_ip", dest_ip);
+	my_nvs_string_update("dest_ip", (char *)&dest_ip, 16);
       }
       if (httpd_query_key_value(buf, "dest_port", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> dest_port=%s", param);
@@ -272,7 +274,7 @@ void app_main(void)
   // read or initialize the operational params in nvs
   // (nvs_key_name, default_value, variable)
   /*  -- TODO: make this work with strings too, for IP addr -- */
-  // my_nvs_read_or_initialize("dest_ip", DEF_DEST_IP, &dest_ip);
+  my_nvs_string_read_or_initialize("dest_ip", DEF_DEST_IP, (char *)&dest_ip, 16);
   my_nvs_read_or_initialize("dest_port", DEF_DEST_PORT, &dest_port);
   my_nvs_read_or_initialize("interval", DEF_INTERVAL, &interval);
 
@@ -377,6 +379,20 @@ void my_nvs_update(char *key, uint32_t value) {
     ESP_LOGI("NVS", "%s", (err != ESP_OK) ? "commit FAILED" : "commit succeeded");
   }
 }
+void my_nvs_string_update(char *key, char *value, uint32_t len) {
+  esp_err_t err;
+  nvs_handle_t my_handle;
+
+  err = nvs_open("storage", NVS_READWRITE, &my_handle);
+  if (err != ESP_OK) 
+    ESP_LOGI("NVS", "error (%s) opening handle", esp_err_to_name(err));
+  else {
+    err = nvs_set_str(my_handle, key, value);
+    ESP_LOGI("NVS", "write storage %s = %s: %s", key, value, (err != ESP_OK) ? "FAILED" : "OK");
+    err = nvs_commit(my_handle);
+    ESP_LOGI("NVS", "%s", (err != ESP_OK) ? "commit FAILED" : "commit succeeded");
+  }
+}
 
 void my_nvs_read_or_initialize(char *key, uint32_t defval, uint32_t *parameter) {
   esp_err_t err;
@@ -395,6 +411,29 @@ void my_nvs_read_or_initialize(char *key, uint32_t defval, uint32_t *parameter) 
     case ESP_ERR_NVS_NOT_FOUND:
       ESP_LOGI("NVS", "nvs key %s not initialized, updating to %d.", key, *parameter);
       my_nvs_update(key, *parameter);
+      break;
+    default :
+      ESP_LOGI("NVS", "error (%s) reading nvs", esp_err_to_name(err));
+    }
+  }
+}
+// my_nvs_string_read_or_initialize("dest_ip", "10.0.0.1", &dest_ip, 16)
+void my_nvs_string_read_or_initialize(char *key, char *defval, char *parameter, uint32_t len) {
+  esp_err_t err;
+  strncpy(parameter, defval, len); // keep the default if not read from nvs
+  nvs_handle_t my_handle;
+  err = nvs_open("storage", NVS_READWRITE, &my_handle);
+  if (err != ESP_OK) 
+    ESP_LOGI("NVS", "error (%s) opening NVS handle", esp_err_to_name(err));
+  else {
+    err = nvs_get_str(my_handle, key, parameter, (size_t *)&len);
+    switch (err) {
+    case ESP_OK:
+      ESP_LOGI("NVS", "nvs read %s = %d", key, *parameter);
+      break;
+    case ESP_ERR_NVS_NOT_FOUND:
+      ESP_LOGI("NVS", "nvs key %s not initialized, updating to %d.", key, *parameter);
+      my_nvs_string_update(key, parameter, len);
       break;
     default :
       ESP_LOGI("NVS", "error (%s) reading nvs", esp_err_to_name(err));
