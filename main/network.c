@@ -42,7 +42,7 @@ void mynet_task(void *pvParameters) {
 	curr_dest_port = dest_port;
 	ESP_LOGI("net", "target is %s:%d\n", (char *)&dest_ip, dest_port);
 	remote_addr.sin_family = AF_INET;
-	remote_addr.sin_addr.s_addr = inet_addr(dest_ip);
+	remote_addr.sin_addr.s_addr = inet_addr((char *)&dest_ip);
 	remote_addr.sin_port = htons(dest_port);
 	
 	while (1) {

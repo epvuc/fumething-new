@@ -95,6 +95,11 @@ static esp_err_t api_get_handler(httpd_req_t *req)
       ESP_LOGI("HTTP", "Found URL query => %s", buf);
       char param[32];
       /* put more api endpoints here */
+      if (httpd_query_key_value(buf, "dest_ip", param, sizeof(param)) == ESP_OK) {
+	ESP_LOGI("HTTP", "---> dest_ip=%s", param);
+	strncpy(dest_ip, param, 16);
+	// my_nvs_update("dest_ip", dest_ip);
+      }
       if (httpd_query_key_value(buf, "dest_port", param, sizeof(param)) == ESP_OK) {
 	ESP_LOGI("HTTP", "---> dest_port=%s", param);
 	dest_port=strtol(param, NULL, 10);
