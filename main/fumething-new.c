@@ -207,6 +207,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         ESP_LOGI("WIFI", "Disconnected. Connecting to the AP again...");
 	inet_online = pdFALSE;
 	stop_webserver(webserver);
+	mdns_free();
 	webserver = NULL;
         esp_wifi_connect();
     }
